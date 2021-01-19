@@ -1,0 +1,49 @@
+# This is a test file
+display("This is a file test")
+
+
+# Test a function
+function testFunc(prefix) -> "testing " + prefix
+
+var a = [1,2,3]
+display(size(a))
+
+# Let's test a more biger function
+function join(elements, separator)
+    var result = ""
+    var len = size(elements)
+
+    for i = 0 to len then
+        var result = result + elements/i
+        var result = result + separator
+    end
+    return result
+end
+
+#display(join(["a", "b"], "---"))
+
+# A demo for loop
+for i = 0 to 5 then
+    # display("loop")
+    display(join([testFunc("langtest"), testFunc("Stupid test") ], ", "))
+end
+
+display("  ")
+# We also have higher order function, which means, you can pass function inside
+# Other functions
+
+function map(elements, func)
+    var new_elements = []
+
+    for i = 0 to size(elements) then
+        append(new_elements, func(elements/i))
+    end
+
+    return new_elements
+end
+
+# A demo for loop
+for i = 0 to 5 then
+    # display("loop")
+    display(join(map(["langtest", "  Hello  "], testFunc), ", "))
+end

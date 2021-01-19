@@ -1,0 +1,339 @@
+statements               : newline+ expression(newline+ expression)+ newline
+
+statement               : keyword:return expression ?
+                        : keyword: continue 
+                        : keyword: break
+                        : expression
+
+expr                    : Keyword:var identifier EQ expression ----> We have to check the first rule before the second one
+                        : arithmetic-expression ((EE|LT|GT|LTE|GTE)) arithmetic-expression) + 
+
+comparison-expression   : NOT comparison-expression
+                        : arithmetic-expression ((EE|LT|GT|LTE|GTE)) arithmetic-expression) + 
+
+# # The fifth priority      
+Arithmetic-expression   : term ((PLUS|MINUS) term)+ --> plus means recursively
+
+# The fourth priority
+term    : factor ((MUL|DIV) factor)+ ---> the factor can be more than recursively (sub nodes)
+
+# The third priority
+factor  : (PLUS|MINUS) factor 			--> we check for the unary operator next to a factor
+	    : power
+
+# The second priority	
+power : call (pow factor)+
+
+
+# 
+call    : atom (LPAREN  (expression(COMMA expression)+)? RPAREN)?
+
+
+# The first priority
+atom    : INT|FLOAT|STRING|IDENTIFIER 				-- We check for int or float, we make its node from the get factor function | Wwith the variable, that means we can use the variable as
+                                               instead of bare value such as 1 3 4
+    	: LPAREN expr RPAREN 	--> most priority    ---> the returned is an expression, which is wrapped into parenthesis 
+        : if-expression 
+        : list-expression
+        : for-expression
+        : while-expression
+        : function-definition
+
+
+list-expression : LSQUARE (expression (COMMA, EXPRESSION)) RSQUARE
+
+# If statement
+if-expression   : keyword: if expr keyword:then 
+                : (statement elif-expression | else-expression) | newline statements KEYWORD:END elif-expression |else-expression)
+
+elif-expression   : keyword: elif expr keyword:then 
+                   (statement elif-expression | else-expression) | newline statements KEYWORD:END elif-expression |else-expression)
+
+else-expression : KEYWORD:ELSE
+                  statement
+                | (NEWLINE statements KEYWORD:END)
+
+for-expression : keyword:for identifier eq expr keyword:to expression 
+                (keyword: step expression)? keyword:then expression
+                 statement
+                | (NEWLINE statements KEYWORD:END)
+
+while-expressiom :keyword:while expression keyword: then expression
+                  statement
+                | (NEWLINE statements KEYWORD:END)
+
+function-definition: keyword:function identifier?
+                     LPAREN (IDENTIFIER (COMMA IDENTIFIER)+) ? RPAREN
+                     ARROW expression
+                     | (NEWLINE statements KEYWORD:END)
+
+
+
+
+
+Token test
+-------------
+100 * 2.5 / (1+2)
+
+Test the error
+----------------
+1+
+
+4 + 
+123 123 123 +
+12 + 6 * 7
+
+Testing the unary operator
+--------------------------
+-3
+-5 + 4 * 4
+ -5 + -4 * 4
+ 
+ Law of precedence
+ 1 + 2 *3
+ 
+ 
+ ----------------------------------------------------------------------------
+ 
+ Adding variables to our language
+ ********************************
+ 
+ We need to add to our language:
+ Identifier
+ Keyword
+ Equal 
+
+ var        variable_name         =        <expression>
+  ^                 ^             ^              ^
+ Keyword       Identifier        Equals    Expression
+
+ Testing the variables:
+ var a = 5
+ a + 6  
+ var a = var b = var c = 10  
+
+ null ===> 0
+
+ You can even use the variable name in the expression   
+ 6 + (var a = 4) 
+
+// TODO 
+Assign the value, to an already existing value 
+
+
+ # ----------------------------------------
+Comparison
+########## 
+5 + 5 = 2 + 8
+( 5 + 5 ) == ( 2 + 8 )
+
+5 + (5 == 2 ) + 8
+
+Testing comparison:
+5 == 6
+6 == 4
+5 >= 6
+5 <= 6
+2 + 8 == 6 + 5
+
+1 == 1 and 2 == 4
+1 == 1 and 2 <= 4
+
+
+# --------------------------------------------
+IF statement
+IF <condition> THEN <expression> ELIF < condition> then <expression> ELSE <expression>
+
+
+# Example
+var age = 27 
+var price = if age >= 18 then 40 else 20 
+
+
+// TODO, fix the error 
+var price = if age = 18 then 40 else 20  
+                   ^^^^^^^^^^^^^^^^^^^^^^
+
+# -------------------------------------------- 
+For loop statement
+for <var-name> = <start-value> to <end-value> then <expression> 
+
+var result = 1  
+for i = 0 to 10 step 2 then result = result * 1  
+
+
+var res = 1
+for i = 1 to 6 then var res = res * i
+
+for i = 5 to 0 step -1 then var res = res * i
+
+# -------------------------------------------- 
+While statement
+while <condition> then <expression>
+
+# ----------------------------------------------
+FUNCTION 
+# ----------------------------------------------
+function add(a, b) -> a + b 
+add(3, 5)
+
+var some_func = add 
+some_func(3, 5)
+
+# Anonymous function
+function(a) -> a + 5 
+
+# We can assign anonymous function to a variable
+var some_func = function(a) -> a + 8
+
+# Testing 
+function test(a) -> a / 0
+test(12)
+---> Gives us a nice traceback 
+
+
+# ------------------------------------
+STRING
+# ------------------------------------
+
+"Text"
+"TexT with \"quotes"" 
+"Text with \\ backslashes \\"
+"Text \nwith \nnewlines"
+
+Testing
+---------
+
+"dksflksdjfds"
+"dskjflksjf" + "kdsfhdskhfsk"
+"helllo" * 3
+function greet(person, emphasization) -> "Hello, " * emphasization + person
+greet("Arsene", 4)
+
+
+
+# ------------------------------------
+LIST
+# ------------------------------------
+[]
+[1,2,3,4,5,6,7]
+[1,2,3,4] + 4 => [1,2,3,4,4]
+[1,2,3] * [1,2,3,4] => [1,2,3,1,2,3,4]
+[1,2,3] - 1 => [1,3]
+[1,2,3] - 0 => [2,3]
+[1,2,3] - 1 => [2,3]
+[1,2,3] - -1 => [1,2]
+[1,2,3] - -2 => [1,3]
+[1,2,3] / 0 => 1
+[1,2,3] / 1 => 2
+[1,2,3] / -1 => 3
+
+
+Testing
+------- 
+[] 
+[1, 2,3,4,5]
+[1,2,3] + 4
+[1,2,3] * [3,4,5]
+[1,2,3] / 0
+[1,2,3] / 9
+
+for i = 0 to 9 then 2 ^ i
+
+
+# ------------------------------------
+BUILT-IN FUNCTION
+# ------------------------------------
+display
+print_ret
+input
+input_int
+clear
+is_number
+is_string
+is_list
+is_function
+append
+pop
+extend
+
+
+Testing
+------
+
+MATH_PI
+display("Hello, world")
+var name = input()
+
+name
+var age = input_int()
+sdhfdskadf
+121
+
+is_num(12)
+is_str("sdfkjsdf")
+is_list([])
+is_function(display)
+var list = [1,2,44,4]
+append(list, 3)
+pop(list, 1) --> This is the index
+
+# -------------------------------- 
+Statement: mulitple expression
+# --------------------------------
+# multiple lines 
+
+10 + 4
+10 + 4; 20 + 3
+10 + 4; 20 + 3;
+var res = if 5 == 5 then "Math works" else "no"
+if 5 == 5 then; display("math");display("works") else display("broken")
+
+# -------------------------------- 
+Return, break, continue
+# --------------------------------
+# The return
+
+function add (a, b)
+    return a + b 
+end 
+
+function example()
+    # Do some stuff
+    if ... then 
+        return
+    end 
+    #Do something
+end
+
+# Comment, break, continue
+for i = 0 to 10
+    if .... then 
+        break
+    end 
+    if ... then 
+        continue
+    end 
+    # Do something
+end
+
+Testing:
+----------
+function test (); var foo = 5; return foo; end
+test()
+var a = []
+for i = 0 to 10 then; if i == 4 then continue elif i == 8 then break; var a = a + i; end
+
+
+var i = 0 
+var a = []
+while i < 10 then; var i = i + 1; if i == 4 then continue elif i == 8 then break; var a = a + i; end
+
+
+# TODO
+update an element at a given index of list
+--> And a builtin function
+
+
+
+

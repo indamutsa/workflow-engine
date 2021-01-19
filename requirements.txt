@@ -1,0 +1,8 @@
+Flask
+redis
+bottle
+sqlalchemy
+psycopg2
+requests
+python-dotenv
+dos2unix
